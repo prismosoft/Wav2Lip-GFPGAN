@@ -10,7 +10,7 @@ datasets:
     name: FFHQ
     type: FFHQDegradationDataset
     # dataroot_gt: datasets/ffhq/ffhq_512.lmdb
-    dataroot_gt: datasets/ffhq/ffhq_512
+    dataroot_gt: /content/drive/MyDrive/AI/FFHQ/ffhq_512
     io_backend:
       # type: lmdb
       type: disk
