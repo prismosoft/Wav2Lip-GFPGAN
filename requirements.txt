@@ -1,5 +1,5 @@
 librosa==0.7.0
-numpy<1.21.1
+numpy<1.21  # numba requires numpy<1.21,>=1.17
 opencv-contrib-python>=4.2.0.34
 opencv-python==4.1.0.25
 torch>=1.7
@@ -17,3 +17,4 @@ yapf
 realesrgan
 
 ffmpeg
+
