@@ -236,6 +236,9 @@ def face_restoration(rembg=False, rembg_only=False):
     if not os.path.exists(unprocessed_frames_path):
         os.makedirs(unprocessed_frames_path)
 
+    if not os.path.exists(restored_frames_path):
+        os.makedirs(restored_frames_path)
+
     vidcap = cv2.VideoCapture(temp_video_path)
     frame_count = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = vidcap.get(cv2.CAP_PROP_FPS)
