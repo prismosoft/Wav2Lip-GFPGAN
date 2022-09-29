@@ -224,7 +224,7 @@ def face_restoration(rembg=False, rembg_only=False):
     from rembg import remove
 
     current_path = os.getcwd()
-    parent_path = os.path.dirname(current_path)
+    parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 
     gfgan_path = os.path.join(parent_path, 'GFGAN-master')
     temp_folder = os.path.join(current_path, 'temp')
