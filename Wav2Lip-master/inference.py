@@ -22,8 +22,6 @@ parser.add_argument('--audio', type=str, help='Filepath of video/audio file to u
 parser.add_argument('--outfile', default='results/result_voice.mp4', type=str,
                     help='Video path to save result. See default for an e.g.')
 
-parser.add_argument('--static', default=False, action='store_true',
-                    help='If True, then use only first video frame for inference')
 parser.add_argument('--fps', type=float, default=25.,
                     help='Can be specified only if input is a static image (default: 25)', required=False)
 
@@ -117,17 +115,7 @@ def face_detect(images):
 
 def datagen(mels):
     img_batch, mel_batch, frame_batch, coords_batch = [], [], [], []
-    """
-    if args.box[0] == -1:
-        if not args.static:
-            face_det_results = face_detect(frames) # BGR2RGB for CNN face detection
-        else:
-            face_det_results = face_detect([frames[0]])
-    else:
-        print('Using the specified bounding box instead of face detection...')
-        y1, y2, x1, x2 = args.box
-        face_det_results = [[f[y1: y2, x1:x2], (y1, y2, x1, x2)] for f in frames]
-    """
+
     reader = read_frames()
     for i, m in enumerate(mels):
         try:
@@ -202,7 +190,6 @@ def read_frames():
         while 1:
             yield face
     video_stream = cv2.VideoCapture(args.face)
-    fps = video_stream.get(cv2.CAP_PROP_FPS)
     print('Reading video frames from start...')
     while 1:
         still_reading, frame = video_stream.read()
