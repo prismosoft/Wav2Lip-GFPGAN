@@ -220,18 +220,20 @@ def read_frames():
         yield frame
 
 
-def face_restoration(rembg=False, rembg_only=False):
+def face_restoration(removebg=False, removebg_only=False):
     from rembg import remove
 
     current_path = os.getcwd()
     parent_path = os.path.abspath(os.path.join(current_path, os.pardir))
 
-    gfgan_path = os.path.join(parent_path, 'GFGAN-master')
+    gfgan_path = os.path.join(parent_path, 'GFPGAN-master')
     temp_folder = os.path.join(current_path, 'temp')
     unprocessed_frames_path = os.path.join(temp_folder, 'frames')
-    restored_frames_path = os.path.join(temp_folder, 'restored_frames')
+    restored_frames_path = os.path.join(temp_folder, 'restored_imgs')
     concat_file_path = os.path.join(temp_folder, 'concat.txt')
+    concated_video_output = os.path.join(temp_folder, 'concated_output.avi')
     temp_video_path = os.path.join(temp_folder, 'result.avi')
+    temp_restored_video_path = os.path.join(temp_folder, 'restored_result.avi')
 
     if not os.path.exists(unprocessed_frames_path):
         os.makedirs(unprocessed_frames_path)
@@ -247,12 +249,12 @@ def face_restoration(rembg=False, rembg_only=False):
     for frameNumber in tqdm(range(frame_count)):
         _, image = vidcap.read()
 
-        if rembg:
+        if removebg:
             image = remove(image)
 
         cv2.imwrite(path.join(unprocessed_frames_path, str(frameNumber).zfill(4) + '.png'), image)
 
-    if not rembg_only:
+    if not removebg_only:
         command = 'python ' + gfgan_path + '/inference_gfpgan.py \
                     -i ' + unprocessed_frames_path + ' \
                     -o ' + temp_folder + ' \
@@ -294,19 +296,24 @@ def face_restoration(rembg=False, rembg_only=False):
 
     concat_file = open(concat_file_path, "w")
     for ips in range(batch):
+        print(ips)
         concat_file.write("file batch_" + str(ips).zfill(4) + ".avi\n")
     concat_file.close()
 
-    command = 'ffmpeg -y -f concat -i ' + concat_file_path + ' -c copy ' + temp_video_path
+    command = 'ffmpeg -y -f concat -i ' + concat_file_path + ' -c copy ' + concated_video_output
     subprocess.call(command, shell=True)
 
+    command = 'ffmpeg -y -i ' + concated_video_output + ' -map 0 -map 1:a -c:v copy -shortest ' + temp_restored_video_path
+    subprocess.call(command, shell=True)
+
+    return temp_restored_video_path
 
 def main():
     if not os.path.isfile(args.face):
         raise ValueError('--face argument must be a valid path to video/image file')
 
     elif args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
-        full_frames = [cv2.imread(args.face)]
+        #full_frames = [cv2.imread(args.face)]
         fps = args.fps
 
     else:
@@ -356,8 +363,7 @@ def main():
 
             frame_h, frame_w = next(read_frames()).shape[:-1]
 
-            out = cv2.VideoWriter('temp/result.avi',
-                                  cv2.VideoWriter_fourcc(*'DIVX'), fps, (frame_w, frame_h))
+            out = cv2.VideoWriter('temp/result.avi', cv2.VideoWriter_fourcc(*'DIVX'), fps, (frame_w, frame_h))
 
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
@@ -380,15 +386,16 @@ def main():
 
     out.release()
 
+    video_result = 'temp/result.avi'
+
     if args.fr:
-        face_restoration(args.rembg)
+        video_result = face_restoration(args.rembg)
     else:
         if args.rembg:
-            face_restoration(True, True)
+            video_result = face_restoration(True, True)
 
-    command = 'ffmpeg -y -i {} -i {} -strict -2 -q:v 1 {}'.format(args.audio, 'temp/result.avi', args.outfile)
+    command = 'ffmpeg -y -i {} -i {} -strict -2 -q:v 1 {}'.format(args.audio, video_result, args.outfile)
     subprocess.call(command, shell=platform.system() != 'Windows')
-
 
 if __name__ == '__main__':
     main()
