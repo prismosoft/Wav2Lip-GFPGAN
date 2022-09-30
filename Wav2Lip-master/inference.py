@@ -220,7 +220,6 @@ def face_restoration(removebg=False, removebg_only=False):
     concat_file_path = os.path.join(temp_folder, 'concat.txt')
     concated_video_output = os.path.join(temp_folder, 'concated_output.avi')
     temp_video_path = os.path.join(temp_folder, 'result.avi')
-    temp_restored_video_path = os.path.join(temp_folder, 'restored_result.avi')
 
     if not os.path.exists(unprocessed_frames_path):
         os.makedirs(unprocessed_frames_path)
@@ -290,7 +289,7 @@ def face_restoration(removebg=False, removebg_only=False):
     command = 'ffmpeg -y -f concat -i ' + concat_file_path + ' -c copy ' + concated_video_output
     subprocess.call(command, shell=True)
 
-    return temp_restored_video_path
+    return concated_video_output
 
 def main():
     if not os.path.isfile(args.face):
