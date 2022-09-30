@@ -303,9 +303,6 @@ def face_restoration(removebg=False, removebg_only=False):
     command = 'ffmpeg -y -f concat -i ' + concat_file_path + ' -c copy ' + concated_video_output
     subprocess.call(command, shell=True)
 
-    command = 'ffmpeg -y -i ' + concated_video_output + ' -map 0 -map 1:a -c:v copy -shortest ' + temp_restored_video_path
-    subprocess.call(command, shell=True)
-
     return temp_restored_video_path
 
 def main():
@@ -394,7 +391,7 @@ def main():
         if args.rembg:
             video_result = face_restoration(True, True)
 
-    command = 'ffmpeg -y -i {} -i {} -strict -2 -q:v 1 {}'.format(args.audio, video_result, args.outfile)
+    command = 'ffmpeg -y -i {} -i {} -vcodec libx264 -vprofile high -crf 28 {}'.format(args.audio, video_result, args.outfile)
     subprocess.call(command, shell=platform.system() != 'Windows')
 
 if __name__ == '__main__':
